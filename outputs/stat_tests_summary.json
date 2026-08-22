@@ -1,0 +1,334 @@
+{
+  "inventory": {
+    "n_days": 90,
+    "n_lat": 100,
+    "n_lon": 240,
+    "n_depth": 15,
+    "n_features": 8,
+    "features": [
+      "sst",
+      "sss",
+      "sla",
+      "adt",
+      "uo",
+      "vo",
+      "u10",
+      "v10"
+    ],
+    "n_ocean_pixel_days": 1067670,
+    "mean_ocean_pixels_per_day": 11863.0,
+    "n_16x16_patches": 8100,
+    "period": "2019-01-01 to 2019-03-31",
+    "domain": "5N-30N, 45E-105E"
+  },
+  "pearson_feat_vs_t0": [
+    {
+      "feature": "sst",
+      "depth_m": 0.0,
+      "r": 0.980670672480257,
+      "p": 0.0,
+      "n": 133155
+    },
+    {
+      "feature": "sss",
+      "depth_m": 0.0,
+      "r": -0.5526846677499174,
+      "p": 0.0,
+      "n": 130410
+    },
+    {
+      "feature": "sla",
+      "depth_m": 0.0,
+      "r": 0.18116706961800122,
+      "p": 0.0,
+      "n": 133155
+    },
+    {
+      "feature": "adt",
+      "depth_m": 0.0,
+      "r": 0.59337796162589,
+      "p": 0.0,
+      "n": 133110
+    },
+    {
+      "feature": "uo",
+      "depth_m": 0.0,
+      "r": -0.14891589395997568,
+      "p": 0.0,
+      "n": 129735
+    },
+    {
+      "feature": "vo",
+      "depth_m": 0.0,
+      "r": 0.0983190985043503,
+      "p": 5.093782457896196e-276,
+      "n": 129735
+    },
+    {
+      "feature": "u10",
+      "depth_m": 0.0,
+      "r": -0.17318054601756513,
+      "p": 0.0,
+      "n": 133155
+    },
+    {
+      "feature": "v10",
+      "depth_m": 0.0,
+      "r": -0.024791858884045954,
+      "p": 1.456687759646848e-19,
+      "n": 133155
+    }
+  ],
+  "pearson_by_depth_best": [
+    {
+      "depth_m": 0.0,
+      "best_feature": "sst",
+      "best_r": 0.980670672480257,
+      "best_p": 0.0,
+      "n_sig_features_p05": 8,
+      "n_features": 8
+    },
+    {
+      "depth_m": 5.0,
+      "best_feature": "sst",
+      "best_r": 0.976801380174081,
+      "best_p": 0.0,
+      "n_sig_features_p05": 8,
+      "n_features": 8
+    },
+    {
+      "depth_m": 10.0,
+      "best_feature": "sst",
+      "best_r": 0.9747983664135514,
+      "best_p": 0.0,
+      "n_sig_features_p05": 8,
+      "n_features": 8
+    },
+    {
+      "depth_m": 20.0,
+      "best_feature": "sst",
+      "best_r": 0.9642087198459327,
+      "best_p": 0.0,
+      "n_sig_features_p05": 8,
+      "n_features": 8
+    },
+    {
+      "depth_m": 30.0,
+      "best_feature": "sst",
+      "best_r": 0.941816855904419,
+      "best_p": 0.0,
+      "n_sig_features_p05": 8,
+      "n_features": 8
+    },
+    {
+      "depth_m": 50.0,
+      "best_feature": "sst",
+      "best_r": 0.8373962016302651,
+      "best_p": 0.0,
+      "n_sig_features_p05": 8,
+      "n_features": 8
+    },
+    {
+      "depth_m": 75.0,
+      "best_feature": "adt",
+      "best_r": 0.5835146285565935,
+      "best_p": 0.0,
+      "n_sig_features_p05": 8,
+      "n_features": 8
+    },
+    {
+      "depth_m": 100.0,
+      "best_feature": "sla",
+      "best_r": 0.6481202532032807,
+      "best_p": 0.0,
+      "n_sig_features_p05": 8,
+      "n_features": 8
+    },
+    {
+      "depth_m": 125.0,
+      "best_feature": "sla",
+      "best_r": 0.585178395637884,
+      "best_p": 0.0,
+      "n_sig_features_p05": 7,
+      "n_features": 8
+    },
+    {
+      "depth_m": 150.0,
+      "best_feature": "sss",
+      "best_r": 0.5712018600786264,
+      "best_p": 0.0,
+      "n_sig_features_p05": 7,
+      "n_features": 8
+    },
+    {
+      "depth_m": 200.0,
+      "best_feature": "sss",
+      "best_r": 0.725903502661265,
+      "best_p": 0.0,
+      "n_sig_features_p05": 8,
+      "n_features": 8
+    },
+    {
+      "depth_m": 300.0,
+      "best_feature": "sss",
+      "best_r": 0.7765968148262712,
+      "best_p": 0.0,
+      "n_sig_features_p05": 8,
+      "n_features": 8
+    },
+    {
+      "depth_m": 500.0,
+      "best_feature": "sss",
+      "best_r": 0.8093529490703064,
+      "best_p": 0.0,
+      "n_sig_features_p05": 8,
+      "n_features": 8
+    },
+    {
+      "depth_m": 700.0,
+      "best_feature": "sss",
+      "best_r": 0.8164809671849333,
+      "best_p": 0.0,
+      "n_sig_features_p05": 8,
+      "n_features": 8
+    },
+    {
+      "depth_m": 1000.0,
+      "best_feature": "sss",
+      "best_r": 0.8092871769016519,
+      "best_p": 0.0,
+      "n_sig_features_p05": 7,
+      "n_features": 8
+    }
+  ],
+  "pearson_counts": {
+    "n_tests": 120,
+    "n_sig_p05": 117,
+    "n_sig_p001": 117
+  },
+  "z_tests": [
+    {
+      "name": "Arabian Sea vs Bay of Bengal mean SST",
+      "H0": "\u03bc_AS = \u03bc_BoB",
+      "mean_a": 26.575735302470274,
+      "mean_b": 28.108723268205324,
+      "z": -42.12170321168291,
+      "p": 0.0,
+      "n_a": 5000,
+      "n_b": 5000
+    },
+    {
+      "name": "Jan vs Mar mean T @ 100 m",
+      "H0": "\u03bc_Jan = \u03bc_Mar",
+      "mean_a": 23.035478138885257,
+      "mean_b": 23.417938575754427,
+      "z": -9.654778348014007,
+      "p": 0.0,
+      "n_a": 5000,
+      "n_b": 5000
+    },
+    {
+      "name": "Mean SLA vs 0",
+      "H0": "\u03bc_SLA = 0",
+      "mean_a": 0.07096844375000001,
+      "mean_b": 0.0,
+      "z": 68.83452309724872,
+      "p": 0.0,
+      "n_a": 8000,
+      "n_b": null
+    }
+  ],
+  "anova": [
+    {
+      "name": "Temperature across 15 standard depths (one day)",
+      "H0": "\u03bc_d0 = \u03bc_d5 = \u2026 = \u03bc_d1000",
+      "F": 33811.026264879205,
+      "p": 0.0,
+      "k_groups": 15,
+      "group_means": [
+        26.92042743672989,
+        26.7986263185694,
+        26.859423228830636,
+        26.918885520317904,
+        26.99294826960057,
+        26.772508778039498,
+        25.719790563166402,
+        23.29285461601993,
+        20.602499683222725,
+        18.415787386749994,
+        15.58280783965869,
+        13.050399353075223,
+        11.179352928288994,
+        9.778190796509145,
+        8.387414514142089
+      ],
+      "group_labels": [
+        0.0,
+        5.0,
+        10.0,
+        20.0,
+        30.0,
+        50.0,
+        75.0,
+        100.0,
+        125.0,
+        150.0,
+        200.0,
+        300.0,
+        500.0,
+        700.0,
+        1000.0
+      ],
+      "eta_sq": 0.9404278665177315
+    },
+    {
+      "name": "T @ 100 m across AS / Central / BoB",
+      "H0": "\u03bc_AS = \u03bc_Central = \u03bc_BoB",
+      "F": 1051.6272269098965,
+      "p": 0.0,
+      "k_groups": 3,
+      "group_means": [
+        23.62805971473997,
+        24.461810003520107,
+        21.77511583178691
+      ],
+      "group_labels": [
+        "AS lon<70",
+        "Central 70-85",
+        "BoB lon>85"
+      ],
+      "eta_sq": 0.26365643292382135
+    },
+    {
+      "name": "SST across Jan / Feb / Mar",
+      "H0": "\u03bc_Jan = \u03bc_Feb = \u03bc_Mar",
+      "F": 271.66741876778536,
+      "p": 2.764792842451088e-115,
+      "k_groups": 3,
+      "group_means": [
+        26.792639964288746,
+        26.9078499617136,
+        27.871923273498215
+      ],
+      "group_labels": [
+        "Jan",
+        "Feb",
+        "Mar"
+      ],
+      "eta_sq": 0.05695133837419099
+    }
+  ],
+  "multilinear_T100": {
+    "r2": 0.5653166395587998,
+    "F": 17709.25087415091,
+    "p": 1.1102230246251565e-16,
+    "n": 108945,
+    "k": 8
+  },
+  "verdict_notes": {
+    "stat_signal": "strong",
+    "temporal_span_days": 90,
+    "temporal_adequate_for_full_DL": false,
+    "spatial_samples_rich": true
+  }
+}

@@ -1,0 +1,13 @@
+data/**/*.nc
+data/**/*.log
+ml/checkpoints/**
+!ml/checkpoints/.gitkeep
+.idea/
+.env
+*.credentials
+__pycache__/
+*.pyc
+.DS_Store
+*.pt
+*.ckpt
+*.pth

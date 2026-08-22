@@ -1,0 +1,8 @@
+numpy>=2.0
+xarray>=2024.10
+netCDF4>=1.6
+h5netcdf>=1.4
+scipy>=1.11
+matplotlib>=3.8
+tqdm>=4.65
+copernicusmarine>=2.0
