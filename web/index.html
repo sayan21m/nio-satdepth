@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SIH PS 26066 — Subsurface Temperature from Satellites</title>
+  <meta name="description" content="Reconstruct North Indian Ocean subsurface temperature from surface satellite fields with ViT and ConvLSTM." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Figtree:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/site.css" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav">
+    <a class="nav-brand" href="#top">SIH PS 26066</a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#problem">Problem</a>
+      <a href="#models">Models</a>
+      <a href="#results">Results</a>
+      <a href="#gallery">Figures</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-inner">
+        <p class="brand">SIH PS 26066</p>
+        <h1>Subsurface ocean temperature from surface satellites</h1>
+        <p class="lede">
+          Two models map eight daily surface fields to potential temperature at 15 depths over the North Indian Ocean.
+        </p>
+        <p class="hero-meta">Region 5°N–30°N, 45°E–105°E · 0.25° · JFM 2015–2024 (903 days)</p>
+      </div>
+    </section>
+
+    <section class="section" id="problem">
+      <div class="section-inner">
+        <h2>Problem</h2>
+        <p class="section-lede">
+          Satellites observe the surface. The task is to reconstruct θ from 0 m to 1000 m from SST, SSS, SLA, ADT, surface currents, and winds.
+        </p>
+        <dl class="spec-strip">
+          <div>
+            <dt>Inputs (X)</dt>
+            <dd>8 surface channels</dd>
+          </div>
+          <div>
+            <dt>Labels (Y)</dt>
+            <dd>θ at 15 depths</dd>
+          </div>
+          <div>
+            <dt>Split</dt>
+            <dd>80 / 20 by time</dd>
+          </div>
+          <div>
+            <dt>Metric</dt>
+            <dd>Ocean-pixel RMSE (°C)</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="models">
+      <div class="section-inner">
+        <h2>Models</h2>
+        <p class="section-lede">
+          Compare the satellite-only Vision Transformer with the lag ConvLSTM (3-day memory).
+        </p>
+
+        <div class="model-switch" role="tablist" aria-label="Model">
+          <button type="button" class="model-tab is-active" role="tab" aria-selected="true" data-model="vit" id="tab-vit">Vision Transformer</button>
+          <button type="button" class="model-tab" role="tab" aria-selected="false" data-model="lstm" id="tab-lstm">ConvLSTM lag</button>
+        </div>
+
+        <article class="model-panel is-active" id="panel-vit" role="tabpanel" aria-labelledby="tab-vit">
+          <div class="model-layout">
+            <div class="model-copy">
+              <h3>Vision Transformer</h3>
+              <p>
+                Splits each day’s surface map into patches, encodes them with a small Transformer, and decodes all 15 depth channels. Uses <strong>surface fields only</strong> — the fair SIH baseline.
+              </p>
+              <ul class="bullets">
+                <li>Overall val RMSE ≈ 0.64 °C</li>
+                <li>Thermocline (100–150 m) ≈ 1.1 °C</li>
+                <li>Notebook: <code>train_vit.ipynb</code></li>
+              </ul>
+            </div>
+            <figure class="model-figure">
+              <img src="assets/vit/03_maps_true_pred.png" alt="ViT true vs predicted maps" />
+              <figcaption>True · prediction · error</figcaption>
+            </figure>
+          </div>
+        </article>
+
+        <article class="model-panel" id="panel-lstm" role="tabpanel" aria-labelledby="tab-lstm" hidden>
+          <div class="model-layout">
+            <div class="model-copy">
+              <h3>ConvLSTM lag</h3>
+              <p>
+                Takes three days (<code>t−2</code>, <code>t−1</code>, <code>t</code>). Lag days include surface fields plus shallow θ (0–200 m). Useful when the model runs daily and can reuse yesterday’s state.
+              </p>
+              <ul class="bullets">
+                <li>Teacher forcing (true lags) ≈ 0.24 °C</li>
+                <li>Closed-loop (own lags) ≈ 1.61 °C</li>
+                <li>Notebook: <code>train_convlstm_lag.ipynb</code></li>
+              </ul>
+            </div>
+            <figure class="model-figure">
+              <img src="assets/lstm/05_closed_loop_rmse.png" alt="ConvLSTM closed-loop vs teacher forcing" />
+              <figcaption>Teacher forcing vs closed-loop rollout</figcaption>
+            </figure>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="results">
+      <div class="section-inner">
+        <h2>Results</h2>
+        <p class="section-lede">
+          Same data and split. For satellite-only reconstruction, use ViT. ConvLSTM’s low teacher-forced error needs accurate lag θ.
+        </p>
+
+        <div class="compare-grid">
+          <div class="metric">
+            <p class="metric-label">ViT overall</p>
+            <p class="metric-value">0.635 °C</p>
+            <p class="metric-note">Surface only</p>
+          </div>
+          <div class="metric">
+            <p class="metric-label">ConvLSTM teacher</p>
+            <p class="metric-value">0.241 °C</p>
+            <p class="metric-note">True GLORYS lags</p>
+          </div>
+          <div class="metric">
+            <p class="metric-label">ConvLSTM closed-loop</p>
+            <p class="metric-value">1.613 °C</p>
+            <p class="metric-note">Own lag predictions</p>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Depth</th>
+                <th>ViT</th>
+                <th>LSTM teacher</th>
+                <th>LSTM closed-loop</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>0 m</td><td>0.344</td><td>0.145</td><td>1.542</td></tr>
+              <tr><td>50 m</td><td>0.598</td><td>0.174</td><td>1.458</td></tr>
+              <tr class="thermo"><td>100 m</td><td>1.107</td><td>0.250</td><td>2.786</td></tr>
+              <tr class="thermo"><td>125 m</td><td>1.091</td><td>0.252</td><td>2.426</td></tr>
+              <tr class="thermo"><td>150 m</td><td>0.954</td><td>0.217</td><td>1.896</td></tr>
+              <tr><td>500 m</td><td>0.359</td><td>0.350</td><td>0.618</td></tr>
+              <tr><td>1000 m</td><td>0.361</td><td>0.365</td><td>0.455</td></tr>
+            </tbody>
+          </table>
+          <p class="table-note">RMSE (°C). Highlighted rows = thermocline.</p>
+        </div>
+
+        <div class="rmse-pair">
+          <figure>
+            <img src="assets/vit/02_rmse_by_depth.png" alt="ViT RMSE by depth" />
+            <figcaption>ViT</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/lstm/02_rmse_by_depth.png" alt="ConvLSTM RMSE by depth" />
+            <figcaption>ConvLSTM (teacher)</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="gallery">
+      <div class="section-inner">
+        <h2>Figures</h2>
+        <p class="section-lede">Selected validation and EDA plots.</p>
+        <div class="gallery-grid">
+          <figure>
+            <img src="assets/predict/maps_surface_100m.png" alt="ViT prediction 2024-03-15" loading="lazy" />
+            <figcaption>ViT · 2024-03-15</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/predict/profile_15N_65E.png" alt="Profile 15N 65E" loading="lazy" />
+            <figcaption>Profile · 15°N, 65°E</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/vit/04_profile.png" alt="ViT profile" loading="lazy" />
+            <figcaption>ViT · validation profile</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/lstm/03_maps_true_pred.png" alt="ConvLSTM maps" loading="lazy" />
+            <figcaption>ConvLSTM · maps</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/eda/03_thetao_depths.png" alt="Thetao depths" loading="lazy" />
+            <figcaption>EDA · θ depths</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/eda/06_profiles.png" alt="Example profiles" loading="lazy" />
+            <figcaption>EDA · profiles</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="pipeline">
+      <div class="section-inner">
+        <h2>Pipeline</h2>
+        <ol class="steps">
+          <li>Build JFM cubes from CMEMS</li>
+          <li>Train ViT or ConvLSTM notebooks</li>
+          <li>Validate RMSE by depth</li>
+          <li>Predict a held-out day</li>
+        </ol>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <p><strong>SIH PS 26066</strong> · satellite embedding · subsurface temperature</p>
+    </div>
+  </footer>
+
+  <script src="js/site.js"></script>
+</body>
+</html>

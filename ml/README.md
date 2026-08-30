@@ -1,34 +1,39 @@
 # ML workspace
 
-Put training, models, and experiment configs here.
+Notebook-first training. Model code lives **inside** the notebooks.
 
 ```
 ml/
-├── configs/       # hyperparameters, experiment YAML/JSON
-├── scripts/       # train / eval / inference scripts
-├── models/        # model definitions (CNN, ViT, etc.)
-└── checkpoints/   # saved weights (.pt / .ckpt)
+├── configs/
+│   ├── eda.ipynb                 # EDA
+│   ├── train_vit.ipynb           # Vision Transformer (TF) — SIH baseline
+│   └── train_convlstm_lag.ipynb  # ConvLSTM (PyTorch/MPS) — 3-day lags + shallow θ
+└── checkpoints/                  # saved weights + norm stats
 ```
 
-## Data paths (do not move data here)
+## Data
 
-- Inputs: `data/processed/train_daily_2019Q1/surface.nc`
-- Labels: `data/processed/train_daily_2019Q1/target.nc`
+- Inputs: `data/processed/train_daily_JFM_2015_2024/surface.nc`
+- Labels: `data/processed/train_daily_JFM_2015_2024/target.nc`
 
-## Suggested next scripts
+Season-matched **Jan–Mar** days for **2015–2024** (903 days).
 
-| Script | Purpose |
-|--------|---------|
-| `scripts/train.py` | Train embedding + reconstruction model |
-| `scripts/eval.py` | RMSE / correlation / bias on holdout |
-| `scripts/infer.py` | Run on new surface fields → depth profiles |
+## Models
 
-Example train entry (to implement):
+| Notebook | Framework | Role |
+|----------|-----------|------|
+| `train_vit.ipynb` | TensorFlow | Surface → 15 depths (satellite-only) |
+| `train_convlstm_lag.ipynb` | PyTorch / MPS | 3-day surface + lag shallow θ; use **closed-loop** §6 for daily ops |
+
+## Apple GPU
+
+- **ConvLSTM** uses **PyTorch MPS**. Install `torch` in the kernel env.
+- **ViT** uses TensorFlow. `tensorflow-metal` is optional and version-sensitive.
+
+## Demo site
+
+Open `web/` in a browser (local server):
 
 ```bash
-python ml/scripts/train.py \
-  --surface data/processed/train_daily_2019Q1/surface.nc \
-  --target data/processed/train_daily_2019Q1/target.nc \
-  --config ml/configs/default.yaml \
-  --out ml/checkpoints/
+cd web && python3 -m http.server 8080
 ```
