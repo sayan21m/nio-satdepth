@@ -1,13 +1,34 @@
+# Data
 data/**/*.nc
 data/**/*.log
+data/raw_tmp/
+data/processed/chunks/
+
+# Model weights / checkpoints
 ml/checkpoints/**
 !ml/checkpoints/.gitkeep
-.idea/
-.env
-*.credentials
-__pycache__/
-*.pyc
-.DS_Store
 *.pt
 *.ckpt
 *.pth
+*.h5
+*.weights.h5
+
+# Large array dumps
+*.npz
+
+# Python / notebooks
+.venv/
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+*.egg-info/
+
+# Env / secrets / IDE
+.env
+*.credentials
+.idea/
+.DS_Store
+
+# Logs
+*.log

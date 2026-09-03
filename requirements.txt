@@ -5,4 +5,7 @@ h5netcdf>=1.4
 scipy>=1.11
 matplotlib>=3.8
 tqdm>=4.65
+torch>=2.2
+# Optional TF notebooks (Apple: TF 2.20 + metal 1.2 often crashes on import)
+tensorflow>=2.15
 copernicusmarine>=2.0
