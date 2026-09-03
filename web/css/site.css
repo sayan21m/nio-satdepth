@@ -109,3 +109,83 @@ body.loading-locked {
     font-size: clamp(1.5rem, 3vw, 2.5rem);
     font-weight: 600;
     color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.3s, transform 0.3s;
+    display: block;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.menu-link:hover {
+    color: #fff;
+    transform: translateX(10px);
+}
+.text-accent { color: var(--accent) !important; }
+
+/* --- NAVIGATION --- */
+.nav-bar {
+    position: fixed;
+    top: 0; width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 4rem;
+    z-index: 9999;
+    transition: transform 0.4s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.nav-bar.hidden {
+    transform: translateY(-100%);
+}
+
+.nav-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.nav-btn.btn-primary {
+    background: #fff;
+    color: #000;
+    padding: 0.8rem 1.5rem;
+    border-radius: 50px;
+    text-decoration: none;
+}
+
+/* --- HERO SECTION (Carousel) --- */
+.hero {
+    position: relative;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.hero-video-container {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 1;
+}
+
+.hero-video {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0; /* JS will toggle opacity */
+    transition: opacity 1.5s ease-in-out;
+}
+
+.hero-video.active {
+    opacity: 0.6; /* Slight dimming so text is legible */
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(180deg, rgba(10,10,10,0) 0%, rgba(10,10,10,1) 100%);
+    z-index: 2;
