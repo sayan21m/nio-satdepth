@@ -129,10 +129,92 @@
             <section class="section dashboard-section" id="dashboard">
                 <div class="dashboard-header text-center fade-in-up">
                     <h2 class="section-heading">Model Simulator</h2>
+                    <p class="large-p mx-auto">Interact with the models to view 3D reconstructions over the North Indian Ocean.</p>
+                </div>
+                
+                <div class="dashboard-container fade-in-up">
+                    
+                    <!-- Dashboard Controls -->
+                    <div class="dash-controls">
+                        
+                        <div class="control-group">
+                            <label>Select Architecture</label>
+                            <div class="model-tabs">
+                                <button class="tab-btn active" data-model="vit">Vision Transformer</button>
+                                <button class="tab-btn" data-model="lstm">ConvLSTM</button>
+                            </div>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>View Output Type</label>
+                            <div class="output-tabs">
+                                <button class="tab-btn active" data-view="map">Prediction Maps</button>
+                                <button class="tab-btn" data-view="profile">Vertical Profiles</button>
+                                <button class="tab-btn" data-view="metrics">Validation Metrics</button>
+                            </div>
+                        </div>
+
+                        <div class="model-description" id="model-desc">
+                            <strong>ViT (Baseline):</strong> Splits surface maps into patches, encoding them with a lightweight Transformer. Fair SIH baseline using surface fields only.
+                        </div>
+
+                    </div>
+
+                    <!-- Dashboard Viewer -->
+                    <div class="dash-viewer">
+                        <div class="viewer-header">
+                            <div class="viewer-title" id="viewer-title">Vision Transformer — Prediction Map</div>
+                            <div class="viewer-status">
+                                <span class="status-dot"></span> Active
+                            </div>
+                        </div>
+                        
+                        <div class="viewer-content">
+                            <!-- ViT Views -->
+                            <div class="view-panel active" id="view-vit-map">
+                                <img src="assets/vit/03_maps_true_pred.png" alt="ViT Map">
+                                <p class="caption">True vs Prediction (100m depth)</p>
+                            </div>
+                            <div class="view-panel" id="view-vit-profile">
+                                <img src="assets/vit/04_profile.png" alt="ViT Profile">
+                                <p class="caption">Validation Profile Comparison</p>
+                            </div>
+                            <div class="view-panel" id="view-vit-metrics">
+                                <img src="assets/vit/02_rmse_by_depth.png" alt="ViT RMSE">
+                                <p class="caption">RMSE across 15 depth levels</p>
+                            </div>
+
+                            <!-- LSTM Views -->
+                            <div class="view-panel" id="view-lstm-map">
+                                <img src="assets/lstm/03_maps_true_pred.png" alt="LSTM Map">
+                                <p class="caption">True vs Prediction (ConvLSTM)</p>
+                            </div>
+                            <div class="view-panel" id="view-lstm-profile">
+                                <img src="assets/lstm/05_closed_loop_rmse.png" alt="LSTM Profile">
+                                <p class="caption">Teacher Forcing vs Closed-loop Profile Error</p>
+                            </div>
+                            <div class="view-panel" id="view-lstm-metrics">
+                                <img src="assets/lstm/02_rmse_by_depth.png" alt="LSTM RMSE">
+                                <p class="caption">Teacher Forcing RMSE across depths</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <footer class="footer">
+                <div class="footer-content">
+                    <div class="nav-brand">OceanEmbed</div>
+                    <p>Advanced Satellite Embedding for the North Indian Ocean.</p>
+                </div>
+            </footer>
 
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://unpkg.com/lenis@1.0.42/dist/lenis.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
