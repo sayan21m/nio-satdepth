@@ -13,10 +13,10 @@ ml/
 
 ## Data
 
-- Inputs: `data/processed/train_daily_JFM_2015_2024/surface.nc`
-- Labels: `data/processed/train_daily_JFM_2015_2024/target.nc`
+- Inputs: `data/processed/train_daily_2015_2024/surface.nc`
+- Labels: `data/processed/train_daily_2015_2024/target.nc`
 
-Season-matched **Jan–Mar** days for **2015–2024** (903 days).
+Full-year **Jan–Dec** days for **2015–2024** (3653 days).
 
 ## Models
 

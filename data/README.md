@@ -6,7 +6,7 @@ Region: North Indian Ocean `5°N–30°N`, `45°E–105°E` · **0.25° daily**
 
 | Path | Range | Days |
 |------|-------|------|
-| **`processed/train_daily_JFM_2015_2024/`** | Jan–Mar 2015–2024 | **903** |
+| **`processed/train_daily_2015_2024/`** | Jan–Dec 2015–2024 | **3653** |
 
 | File | Role |
 |------|------|
