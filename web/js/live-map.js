@@ -183,7 +183,7 @@
     const label = document.getElementById("live-field-label");
     if (!wrap) return;
     const fields = mode === "surface" ? SURFACE_FIELDS : DEPTH_FIELDS;
-    label.textContent = mode === "surface" ? "Surface Channel" : "Depth";
+    if (label) label.textContent = mode === "surface" ? "Surface Channel" : "Depth";
     wrap.innerHTML = "";
     fields.forEach((f, i) => {
       const btn = document.createElement("button");

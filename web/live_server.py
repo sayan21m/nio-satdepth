@@ -331,7 +331,7 @@ def main():
     t.start()
     adv = threading.Thread(target=_advance_loop, daemon=True)
     adv.start()
-    print("Open http://127.0.0.1:8765  → Live Map tab", flush=True)
+    print("Open http://127.0.0.1:8765  -> Live Map tab", flush=True)
     app.run(host="127.0.0.1", port=8765, debug=False, threaded=True)
 
 

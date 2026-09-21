@@ -9,7 +9,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/site.css">
+    
+    <!-- GSAP for Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <link rel="stylesheet" href="css/site.css?v=2">
 </head>
 <body class="loading-locked">
 
@@ -34,7 +39,7 @@
             <a href="#problem" class="menu-link">The Problem</a>
             <a href="#solution" class="menu-link">The Features</a>
             <a href="#live" class="menu-link">Live Map</a>
-            <a href="#dashboard" class="menu-link text-accent">Launch Dashboard</a>
+            <a href="#dashboard" class="menu-link text-accent">Launch Simulator</a>
         </div>
     </div>
 
@@ -44,7 +49,7 @@
         <button id="menu-btn" class="nav-btn">Menu</button>
         <div class="nav-right">
             <a href="#live" class="nav-btn">Live</a>
-            <a href="#dashboard" class="nav-btn btn-primary">Dashboard</a>
+            <a href="#dashboard" class="nav-btn btn-primary">Simulator</a>
         </div>
     </header>
 
@@ -138,7 +143,8 @@
                     </p>
                 </div>
 
-                <div class="live-container fade-in-up">
+                <div class="live-container">
+                    <!-- Sidebar Controls -->
                     <div class="live-controls">
                         <div class="control-group">
                             <label>View</label>
@@ -150,24 +156,11 @@
                         </div>
 
                         <div class="control-group">
-                            <label id="live-field-label">Surface Channel</label>
-                            <div class="live-channel-tabs" id="live-field-tabs">
-                                <!-- filled by JS -->
-                            </div>
-                        </div>
-
-                        <div class="control-group">
                             <label>Stream</label>
                             <div class="live-meta">
-                                <div class="live-status-row">
-                                    <span class="status-dot live-pulse" id="live-dot"></span>
-                                    <span id="live-status-text">Connecting…</span>
-                                </div>
-                                <p class="live-updated">Date: <span id="live-date">—</span></p>
-                                <p class="live-updated">Last fetch: <span id="live-updated">—</span></p>
                                 <p class="live-interval">Auto-advance ~<span id="live-interval-sec">20</span>s · poll 5s</p>
                             </div>
-                            <button type="button" class="tab-btn live-refresh-btn" id="live-refresh-btn">Refresh now</button>
+                            <button type="button" class="tab-btn live-refresh-btn" id="live-refresh-btn">Refresh</button>
                         </div>
 
                         <div class="model-description">
@@ -178,14 +171,16 @@
                         </div>
                     </div>
 
+                    <!-- Main Viewer -->
                     <div class="live-viewer">
-                        <div class="viewer-header">
-                            <div class="viewer-title" id="live-viewer-title">Sea Surface Temperature</div>
-                            <div class="viewer-status">
-                                <span class="status-dot"></span>
-                                <span id="live-grid-info">100 × 240</span>
+                        <!-- Header exclusively for Sub-Menus -->
+                        <div class="viewer-header" style="justify-content: center;">
+                            <div class="viewer-sub-menu" id="live-field-tabs">
+                                <!-- filled by JS -->
                             </div>
                         </div>
+
+                        <!-- Map Stage -->
                         <div class="live-map-stage">
                             <div class="live-map-wrap">
                                 <canvas id="live-canvas" width="960" height="480"></canvas>
@@ -196,6 +191,26 @@
                                 <span id="live-legend-max">—</span>
                                 <span class="live-legend-unit" id="live-legend-unit">°C</span>
                             </div>
+                        </div>
+
+                        <!-- Stream Meta Footer -->
+                        <div class="live-viewer-footer">
+                            <div class="footer-meta">
+                                <div class="live-status-row">
+                                    <span class="status-dot live-pulse" id="live-dot"></span>
+                                    <span id="live-status-text">Connecting…</span>
+                                </div>
+                                <span class="divider">|</span>
+                                <span id="live-viewer-title" style="font-weight: 600; color: #fff;">Sea Surface Temperature</span>
+                                <span class="divider">|</span>
+                                <span id="live-grid-info" class="meta-badge">100 × 240</span>
+                                <span class="divider">|</span>
+                                <span>Date: <strong id="live-date">—</strong></span>
+                                <span style="display:none;" id="live-updated"></span>
+                                <span class="divider">|</span>
+                                <span>Auto-advance ~<strong id="live-interval-sec">20</strong>s</span>
+                            </div>
+                            <button type="button" class="tab-btn live-refresh-btn" id="live-refresh-btn">Refresh</button>
                         </div>
                     </div>
                 </div>
@@ -208,7 +223,7 @@
                     <p class="large-p mx-auto">Interact with the models to view 3D reconstructions over the North Indian Ocean.</p>
                 </div>
                 
-                <div class="dashboard-container fade-in-up">
+                <div class="dashboard-container">
                     
                     <!-- Dashboard Controls -->
                     <div class="dash-controls">

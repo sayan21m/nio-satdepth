@@ -137,6 +137,30 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     });
 
+    // Staggered reveal for Live Map controls
+    gsap.utils.toArray('.live-container').forEach(container => {
+        const controls = container.querySelectorAll('.control-group');
+        const viewer = container.querySelector('.live-map-stage');
+        
+        if(controls.length > 0) {
+            gsap.fromTo(controls, 
+                { x: -30, opacity: 0 }, 
+                { x: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: 'power3.out',
+                  scrollTrigger: { trigger: container, start: 'top 85%' }
+                }
+            );
+        }
+        
+        if(viewer) {
+            gsap.fromTo(viewer, 
+                { y: 40, opacity: 0, scale: 0.98 }, 
+                { y: 0, opacity: 1, scale: 1, duration: 1, ease: 'power3.out', delay: 0.2,
+                  scrollTrigger: { trigger: container, start: 'top 85%' }
+                }
+            );
+        }
+    });
+
     // Story text slides in from the left
     gsap.utils.toArray('.story-text').forEach(text => {
         gsap.fromTo(text,
