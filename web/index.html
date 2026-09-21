@@ -33,6 +33,7 @@
             <a href="#hero" class="menu-link">Home</a>
             <a href="#problem" class="menu-link">The Problem</a>
             <a href="#solution" class="menu-link">The Features</a>
+            <a href="#live" class="menu-link">Live Map</a>
             <a href="#dashboard" class="menu-link text-accent">Launch Dashboard</a>
         </div>
     </div>
@@ -41,8 +42,10 @@
     <header class="nav-bar">
         <!-- Top Left: Menu Button -->
         <button id="menu-btn" class="nav-btn">Menu</button>
-        <!-- Top Right: Dashboard Button -->
-        <a href="#dashboard" class="nav-btn btn-primary">Dashboard</a>
+        <div class="nav-right">
+            <a href="#live" class="nav-btn">Live</a>
+            <a href="#dashboard" class="nav-btn btn-primary">Dashboard</a>
+        </div>
     </header>
 
     <!-- Smooth Scroll Wrapper for Lenis -->
@@ -102,7 +105,7 @@
                         <div class="label fade-in-up">Our Solution</div>
                         <h2 class="section-heading fade-in-up">Satellite Embeddings.</h2>
                         <p class="large-p fade-in-up">
-                            Surface variables—SST, Salinity, Sea Level Anomaly, and Currents—contain indirect signatures of deep ocean processes. By generating compact satellite embeddings via deep learning architectures like Vision Transformers (ViT) and ConvLSTMs, we reconstruct the vertical temperature structure purely from orbit.
+                            Surface variables—SST, Salinity, Sea Level Anomaly, and Currents—contain indirect signatures of deep ocean processes. A Vision Transformer learns a compact satellite embedding and reconstructs the vertical temperature structure purely from orbit.
                         </p>
                         
                         <div class="features-list mt-4">
@@ -125,6 +128,79 @@
                 </div>
             </section>
 
+            <!-- Live Surface + Prediction Maps -->
+            <section class="section live-section" id="live">
+                <div class="dashboard-header text-center fade-in-up">
+                    <h2 class="section-heading">Live Colormap Maps</h2>
+                    <p class="large-p mx-auto">
+                        Continuously streams North Indian Ocean surface fields and ViT-predicted
+                        subsurface temperature as filled colormap maps (same style as training figures).
+                    </p>
+                </div>
+
+                <div class="live-container fade-in-up">
+                    <div class="live-controls">
+                        <div class="control-group">
+                            <label>View</label>
+                            <div class="live-channel-tabs" id="live-mode-tabs">
+                                <button class="tab-btn active" data-mode="surface">Surface fields</button>
+                                <button class="tab-btn" data-mode="pred">Predicted θ</button>
+                                <button class="tab-btn" data-mode="true">True θ (GLORYS)</button>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label id="live-field-label">Surface Channel</label>
+                            <div class="live-channel-tabs" id="live-field-tabs">
+                                <!-- filled by JS -->
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Stream</label>
+                            <div class="live-meta">
+                                <div class="live-status-row">
+                                    <span class="status-dot live-pulse" id="live-dot"></span>
+                                    <span id="live-status-text">Connecting…</span>
+                                </div>
+                                <p class="live-updated">Date: <span id="live-date">—</span></p>
+                                <p class="live-updated">Last fetch: <span id="live-updated">—</span></p>
+                                <p class="live-interval">Auto-advance ~<span id="live-interval-sec">20</span>s · poll 5s</p>
+                            </div>
+                            <button type="button" class="tab-btn live-refresh-btn" id="live-refresh-btn">Refresh now</button>
+                        </div>
+
+                        <div class="model-description">
+                            <strong>How to run:</strong><br>
+                            <code>cd web && python live_server.py</code><br>
+                            then open <code>http://127.0.0.1:8765</code><br><br>
+                            Surface grids + ViT predictions from the training cube, rendered as continuous colormaps.
+                        </div>
+                    </div>
+
+                    <div class="live-viewer">
+                        <div class="viewer-header">
+                            <div class="viewer-title" id="live-viewer-title">Sea Surface Temperature</div>
+                            <div class="viewer-status">
+                                <span class="status-dot"></span>
+                                <span id="live-grid-info">100 × 240</span>
+                            </div>
+                        </div>
+                        <div class="live-map-stage">
+                            <div class="live-map-wrap">
+                                <canvas id="live-canvas" width="960" height="480"></canvas>
+                            </div>
+                            <div class="live-legend" id="live-legend">
+                                <span id="live-legend-min">—</span>
+                                <div class="live-legend-bar"></div>
+                                <span id="live-legend-max">—</span>
+                                <span class="live-legend-unit" id="live-legend-unit">°C</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Interactive Dashboard (PoC Simulator) -->
             <section class="section dashboard-section" id="dashboard">
                 <div class="dashboard-header text-center fade-in-up">
@@ -141,7 +217,7 @@
                             <label>Select Architecture</label>
                             <div class="model-tabs">
                                 <button class="tab-btn active" data-model="vit">Vision Transformer</button>
-                                <button class="tab-btn" data-model="lstm">ConvLSTM</button>
+                                <button class="tab-btn" data-model="compare">Compare</button>
                             </div>
                         </div>
                         
@@ -184,18 +260,18 @@
                                 <p class="caption">RMSE across 15 depth levels</p>
                             </div>
 
-                            <!-- LSTM Views -->
-                            <div class="view-panel" id="view-lstm-map">
-                                <img src="assets/lstm/03_maps_true_pred.png" alt="LSTM Map">
-                                <p class="caption">True vs Prediction (ConvLSTM)</p>
+                            <!-- Compare -->
+                            <div class="view-panel" id="view-compare-map">
+                                <img src="assets/compare/01_overall_rmse.png" alt="Overall RMSE comparison">
+                                <p class="caption">Overall validation RMSE — ViT kept, others dropped</p>
                             </div>
-                            <div class="view-panel" id="view-lstm-profile">
-                                <img src="assets/lstm/05_closed_loop_rmse.png" alt="LSTM Profile">
-                                <p class="caption">Teacher Forcing vs Closed-loop Profile Error</p>
+                            <div class="view-panel" id="view-compare-profile">
+                                <img src="assets/compare/02_rmse_by_depth_sat_only.png" alt="RMSE by depth">
+                                <p class="caption">RMSE vs depth — all trained architectures</p>
                             </div>
-                            <div class="view-panel" id="view-lstm-metrics">
-                                <img src="assets/lstm/02_rmse_by_depth.png" alt="LSTM RMSE">
-                                <p class="caption">Teacher Forcing RMSE across depths</p>
+                            <div class="view-panel" id="view-compare-metrics">
+                                <img src="assets/compare/03_rmse_by_depth_all.png" alt="RMSE by depth comparison">
+                                <p class="caption">Error profiles used to drop worse models</p>
                             </div>
                         </div>
                     </div>
@@ -218,6 +294,7 @@
     <script src="https://unpkg.com/lenis@1.0.42/dist/lenis.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="js/live-map.js"></script>
     <script src="js/site.js"></script>
 </body>
 </html>

@@ -5,10 +5,10 @@ Notebook-first training. Model code lives **inside** the notebooks.
 ```
 ml/
 ├── configs/
-│   ├── eda.ipynb                 # EDA
-│   ├── train_vit.ipynb           # Vision Transformer (TF) — SIH baseline
-│   └── train_convlstm_lag.ipynb  # ConvLSTM (PyTorch/MPS) — 3-day lags + shallow θ
-└── checkpoints/                  # saved weights + norm stats
+│   ├── eda.ipynb              # EDA
+│   ├── train_vit.ipynb        # Vision Transformer — kept SIH model
+│   └── compare_models.ipynb   # RMSE leaderboard (kept vs dropped)
+└── checkpoints/               # saved weights + norm stats
 ```
 
 ## Data
@@ -20,19 +20,14 @@ Full-year **Jan–Dec** days for **2015–2024** (3653 days).
 
 ## Models
 
-| Notebook | Framework | Role |
-|----------|-----------|------|
-| `train_vit.ipynb` | TensorFlow | Surface → 15 depths (satellite-only) |
-| `train_convlstm_lag.ipynb` | PyTorch / MPS | 3-day surface + lag shallow θ; use **closed-loop** §6 for daily ops |
+| Notebook | Framework | Role | Overall RMSE |
+|----------|-----------|------|-------------:|
+| `train_vit.ipynb` | TensorFlow | Surface → 15 depths (satellite-only) | **0.671 °C** |
+| `compare_models.ipynb` | — | Leaderboard of all tried architectures | — |
 
-## Apple GPU
-
-- **ConvLSTM** uses **PyTorch MPS**. Install `torch` in the kernel env.
-- **ViT** uses TensorFlow. `tensorflow-metal` is optional and version-sensitive.
+Worse architectures (ViT + $L_{\mathrm{grad}}$, thermocline-first, structured embedding, depth-conditioned, probabilistic ViT, TC-band ViT) were trained, compared, and removed. See `compare_models.ipynb`.
 
 ## Demo site
-
-Open `web/` in a browser (local server):
 
 ```bash
 cd web && python3 -m http.server 8080

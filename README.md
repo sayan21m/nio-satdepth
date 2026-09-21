@@ -48,13 +48,13 @@ SIH_PS_26066/
 │   ├── download_pipeline.py
 │   └── extend_dataset.py
 ├── ml/
-│   ├── configs/              ← EDA + train ViT / ConvLSTM
+│   ├── configs/              ← EDA + train ViT + compare
 │   └── checkpoints/
 ├── data/
 │   └── processed/
 │       └── train_daily_2015_2024/
 ├── outputs/
-└── web/                      ← demo page (both models)
+└── web/                      ← demo page
 ```
 
 Training models live **inside** the notebooks (no `ml/models/*.py` for now).
@@ -67,7 +67,7 @@ python3 -m http.server 8080
 # open http://localhost:8080
 ```
 
-ViT vs ConvLSTM, RMSE table, and result galleries.
+ViT results, RMSE leaderboard of dropped architectures, and prediction galleries.
 
 ---
 
@@ -110,7 +110,7 @@ print(target)   # time × depth × lat × lon
 - **X** = surface fields each day  
 - **Y** = `thetao` at 15 depths  
 
-Notebooks: `ml/configs/eda.ipynb`, `train_vit.ipynb`, `train_convlstm_lag.ipynb`.
+Notebooks: `ml/configs/eda.ipynb`, `train_vit.ipynb`, `compare_models.ipynb`.
 
 ---
 
@@ -155,7 +155,7 @@ Repeat for 2022…2025, then merge folders into `train_daily_JFM_2019_2025`.
 ## Expected solution path (SIH)
 
 1. **Preprocessing** — `download_pipeline.py`  
-2. **Embedding** — ViT / ConvLSTM in notebooks  
+2. **Embedding** — Vision Transformer in `ml/configs/train_vit.ipynb`  
 3. **Reconstruction** — surface → `thetao` at depths  
 4. **Validation** — RMSE (°C), correlation, % within 1 °C  
 5. **PoC demo** — Bay of Bengal / Arabian Sea maps and profiles (`web/`)  
@@ -167,7 +167,7 @@ Repeat for 2022…2025, then merge folders into `train_daily_JFM_2019_2025`.
 1. `pip install -r requirements.txt`  
 2. `copernicusmarine login`  
 3. Open `data/processed/train_daily_2015_2024/`  
-4. Train via `ml/configs/train_vit.ipynb` or `train_convlstm_lag.ipynb`  
+4. Train via `ml/configs/train_vit.ipynb`  
 5. Add JFM years with `src/download_pipeline.py`  
 
 Do not commit `.nc` files or credentials (see `.gitignore`).
