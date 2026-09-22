@@ -226,6 +226,77 @@
     if (opts.onRange) opts.onRange(vmin, vmax);
   }
 
+  function renderRaster(grid, opts = {}) {
+    const H = grid.length;
+    const W = grid[0]?.length || 0;
+    const scale = opts.scale || 8;
+    const outW = Math.max(1, W * scale);
+    const outH = Math.max(1, H * scale);
+    let { vmin, vmax } = finiteStats(grid);
+    if (opts.diverging) {
+      const lim = Math.max(Math.abs(vmin), Math.abs(vmax), 1e-6);
+      vmin = -lim;
+      vmax = lim;
+    }
+    const span = vmax - vmin;
+    const canvas = document.createElement("canvas");
+    canvas.width = outW;
+    canvas.height = outH;
+    const ctx = canvas.getContext("2d");
+    const img = ctx.createImageData(outW, outH);
+    for (let j = 0; j < outH; j++) {
+      const gy = ((j + 0.5) / outH) * (H - 1);
+      for (let i = 0; i < outW; i++) {
+        const gx = ((i + 0.5) / outW) * (W - 1);
+        const v = sampleBilinear(grid, H, W, gx, gy);
+        const p = (j * outW + i) * 4;
+        if (v == null || Number.isNaN(v)) {
+          img.data[p] = 0;
+          img.data[p + 1] = 0;
+          img.data[p + 2] = 0;
+          img.data[p + 3] = 0;
+          continue;
+        }
+        const [r, g, b] = opts.diverging ? rdBuRGB((v - vmin) / span) : turboRGB((v - vmin) / span);
+        img.data[p] = r;
+        img.data[p + 1] = g;
+        img.data[p + 2] = b;
+        img.data[p + 3] = 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    if (opts.onRange) opts.onRange(vmin, vmax);
+    return canvas.toDataURL("image/png");
+  }
+
+  function fieldBounds(lat, lon) {
+    const south = Math.min(lat[0], lat[lat.length - 1]);
+    const north = Math.max(lat[0], lat[lat.length - 1]);
+    const west = Math.min(lon[0], lon[lon.length - 1]);
+    const east = Math.max(lon[0], lon[lon.length - 1]);
+    const dlat = Math.abs(lat[1] - lat[0]) || 0.25;
+    const dlon = Math.abs(lon[1] - lon[0]) || 0.25;
+    return [
+      [south - dlat / 2, west - dlon / 2],
+      [north + dlat / 2, east + dlon / 2],
+    ];
+  }
+
+  function sampleAtLatLon(grid, lat, lon, qlat, qlon) {
+    const H = grid.length;
+    const W = grid[0]?.length || 0;
+    if (!H || !W) return NaN;
+    const lat0 = lat[0];
+    const lat1 = lat[lat.length - 1];
+    const lon0 = lon[0];
+    const lon1 = lon[lon.length - 1];
+    const rowFromSouth = ((qlat - lat0) / (lat1 - lat0)) * (H - 1);
+    const col = ((qlon - lon0) / (lon1 - lon0)) * (W - 1);
+    if (rowFromSouth < -0.5 || rowFromSouth > H - 0.5 || col < -0.5 || col > W - 0.5) return NaN;
+    const yFromNorth = H - 1 - rowFromSouth;
+    return sampleBilinear(grid, H, W, col, yFromNorth);
+  }
+
   function setActiveTabs(container, activeBtn) {
     container.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
     activeBtn.classList.add("active");
@@ -253,15 +324,17 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    const canvas = document.getElementById("live-canvas");
-    if (!canvas) return;
+    const mapEl = document.getElementById("live-map");
+    if (!mapEl || typeof L === "undefined") return;
 
     let mode = "surface";
     let fieldId = "sst";
     let payload = null;
     let busy = false;
-    let cssSize = { w: 960, h: 480 };
+    let overlay = null;
+    let fitted = false;
 
+    const hoverEl = document.getElementById("live-hover");
     const statusText = document.getElementById("live-status-text");
     const updatedEl = document.getElementById("live-updated");
     const dateEl = document.getElementById("live-date");
@@ -270,7 +343,33 @@
     const legendMin = document.getElementById("live-legend-min");
     const legendMax = document.getElementById("live-legend-max");
     const legendUnit = document.getElementById("live-legend-unit");
+    const legendBar = document.querySelector(".live-legend-bar");
     const intervalSec = document.getElementById("live-interval-sec");
+
+    const map = L.map(mapEl, {
+      zoomControl: true,
+      minZoom: 3,
+      maxZoom: 9,
+      worldCopyJump: false,
+      attributionControl: true,
+    }).setView([17.5, 75], 5);
+    window.__liveMap = map;
+
+    L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+      { attribution: "Tiles &copy; Esri", maxZoom: 16 }
+    ).addTo(map);
+
+    L.control.scale({ metric: true, imperial: false }).addTo(map);
+
+    const resetBtn = document.createElement("button");
+    resetBtn.type = "button";
+    resetBtn.className = "tab-btn live-map-reset";
+    resetBtn.textContent = "Reset view";
+    mapEl.appendChild(resetBtn);
+
+    mapEl.addEventListener("wheel", (e) => e.stopPropagation(), { capture: true });
+    mapEl.addEventListener("touchmove", (e) => e.stopPropagation(), { capture: true });
 
     function setStatus(msg) {
       if (statusText) statusText.textContent = msg;
@@ -290,30 +389,9 @@
       return payload.true?.[fieldId] || null;
     }
 
-    function fitCanvas(grid) {
-      const wrap = canvas.parentElement;
-      if (!wrap) return;
-
-      const cssW = Math.max(320, Math.floor(wrap.clientWidth));
-      const H = grid?.length || 100;
-      const W = grid?.[0]?.length || 240;
-      const aspect = geoAspect(payload?.lat, payload?.lon, H, W);
-
-      // Cap at 3x for Retina/HiDPI; render map buffer at this density
-      const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1), 3);
-      const plotW = Math.max(1, cssW - PAD.L - PAD.R);
-      const plotH = plotW / aspect;
-      const cssH = Math.round(plotH + PAD.T + PAD.B);
-      const bw = Math.max(1, Math.round(cssW * dpr));
-      const bh = Math.max(1, Math.round(cssH * dpr));
-
-      cssSize = { w: cssW, h: cssH, dpr };
-      if (canvas.width !== bw || canvas.height !== bh) {
-        canvas.width = bw;
-        canvas.height = bh;
-      }
-      canvas.style.width = cssW + "px";
-      canvas.style.height = cssH + "px";
+    function nioBounds() {
+      if (payload?.lat && payload?.lon) return fieldBounds(payload.lat, payload.lon);
+      return [[5, 45], [30, 105]];
     }
 
     function redraw() {
@@ -326,26 +404,14 @@
             ? `Predicted θ @ ${meta.label}`
             : `True θ @ ${meta.label}`;
       legendUnit.textContent = meta.unit;
+      if (legendBar) {
+        legendBar.style.background = divergingField(fieldId)
+          ? "linear-gradient(90deg, #2166ac, #f7f7f7, #b2182b)"
+          : "linear-gradient(90deg, #30123b, #1d4ed8, #22d3ee, #fbbf24, #ef4444, #7a0403)";
+      }
 
-      fitCanvas(grid);
-
-      const ctx = canvas.getContext("2d");
-      const dpr = cssSize.dpr || 1;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-      if (!grid) {
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(0, 0, cssSize.w, cssSize.h);
-        ctx.fillStyle = "#94a3b8";
-        ctx.font = "14px Inter, system-ui, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText(
-          mode === "pred" && payload && !Object.keys(payload.pred || {}).length
-            ? "No ViT weights loaded on server"
-            : "Waiting for data…",
-          cssSize.w / 2,
-          cssSize.h / 2
-        );
+      if (!grid || !payload?.lat) {
+        if (hoverEl) hoverEl.textContent = "Waiting for data…";
         return;
       }
 
@@ -355,17 +421,53 @@
       const lon1 = payload.lon[payload.lon.length - 1];
       gridInfo.textContent = `${grid.length} × ${grid[0].length} · ${Math.min(lat0, lat1).toFixed(1)}–${Math.max(lat0, lat1).toFixed(1)}°N, ${lon0.toFixed(1)}–${lon1.toFixed(1)}°E`;
 
-      paintColormap(ctx, cssSize.w, cssSize.h, grid, {
-        dpr,
+      const bounds = fieldBounds(payload.lat, payload.lon);
+      const url = renderRaster(grid, {
+        scale: 8,
         diverging: divergingField(fieldId),
-        lat: payload.lat,
-        lon: payload.lon,
         onRange(vmin, vmax) {
           legendMin.textContent = vmin.toFixed(2);
           legendMax.textContent = vmax.toFixed(2);
         },
       });
+
+      if (overlay) {
+        overlay.setUrl(url);
+        overlay.setBounds(bounds);
+      } else {
+        overlay = L.imageOverlay(url, bounds, { opacity: 0.92, interactive: true }).addTo(map);
+      }
+      map.invalidateSize();
+      if (!fitted) {
+        const refit = () => {
+          map.invalidateSize();
+          if (mapEl.clientHeight < 80) return;
+          map.fitBounds(bounds, { padding: [12, 12], maxZoom: 6, animate: false });
+          fitted = true;
+        };
+        refit();
+        requestAnimationFrame(refit);
+        setTimeout(refit, 250);
+      }
     }
+
+    map.on("mousemove", (e) => {
+      const grid = pickGrid();
+      if (!hoverEl) return;
+      if (!grid || !payload?.lat) {
+        hoverEl.textContent = "Scroll to zoom · drag to pan";
+        return;
+      }
+      const { lat, lng } = e.latlng;
+      const v = sampleAtLatLon(grid, payload.lat, payload.lon, lat, lng);
+      const meta = currentMeta();
+      const val = v == null || Number.isNaN(v) ? "land / no data" : `${v.toFixed(2)} ${meta.unit}`;
+      hoverEl.textContent = `${lat.toFixed(2)}°N  ${lng.toFixed(2)}°E  ·  ${val}`;
+    });
+
+    resetBtn.addEventListener("click", () => {
+      map.fitBounds(nioBounds(), { padding: [16, 16] });
+    });
 
     let demoPack = null;
     let demoIdx = 0;
@@ -398,7 +500,7 @@
       applyPayload({
         ok: true,
         date: day.date,
-        model: "demo",
+        model: demoPack.model || "demo",
         lat: demoPack.lat,
         lon: demoPack.lon,
         surface: day.surface,
@@ -454,21 +556,18 @@
       });
     });
 
-    document.getElementById("live-refresh-btn")?.addEventListener("click", () => fetchLive());
+    document.querySelectorAll("#live-refresh-btn").forEach((btn) => {
+      btn.addEventListener("click", () => fetchLive());
+    });
 
     let resizeTimer = null;
     window.addEventListener("resize", () => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => redraw(), 100);
+      resizeTimer = setTimeout(() => {
+        map.invalidateSize();
+        redraw();
+      }, 100);
     });
-
-    const wrap = canvas.parentElement;
-    if (wrap && typeof ResizeObserver !== "undefined") {
-      new ResizeObserver(() => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => redraw(), 50);
-      }).observe(wrap);
-    }
 
     setInterval(fetchLive, POLL_MS);
     fetchLive();
