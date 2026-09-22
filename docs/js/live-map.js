@@ -1,6 +1,6 @@
 /**
  * Live colormap maps — filled pcolormesh-style canvas for surface + predicted θ.
- * Expects web/live_server.py on the same origin (http://127.0.0.1:8765).
+ * Expects docs/live_server.py on the same origin (http://127.0.0.1:8765).
  */
 (function () {
   const POLL_MS = 5000;
@@ -183,7 +183,7 @@
     const label = document.getElementById("live-field-label");
     if (!wrap) return;
     const fields = mode === "surface" ? SURFACE_FIELDS : DEPTH_FIELDS;
-    label.textContent = mode === "surface" ? "Surface Channel" : "Depth";
+    if (label) label.textContent = mode === "surface" ? "Surface Channel" : "Depth";
     wrap.innerHTML = "";
     fields.forEach((f, i) => {
       const btn = document.createElement("button");

@@ -4,7 +4,7 @@
 Serves filled-grid JSON for colormap maps (surface channels + predicted θ).
 Advances through the training cube on a timer so the UI looks continuous.
 
-  cd web && python live_server.py
+  cd docs && python live_server.py
   open http://127.0.0.1:8765
 """
 
@@ -331,7 +331,7 @@ def main():
     t.start()
     adv = threading.Thread(target=_advance_loop, daemon=True)
     adv.start()
-    print("Open http://127.0.0.1:8765  → Live Map tab", flush=True)
+    print("Open http://127.0.0.1:8765  -> Live Map tab", flush=True)
     app.run(host="127.0.0.1", port=8765, debug=False, threaded=True)
 
 

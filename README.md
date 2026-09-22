@@ -54,7 +54,7 @@ SIH_PS_26066/
 │   └── processed/
 │       └── train_daily_2015_2024/
 ├── outputs/
-└── web/                      ← demo page
+└── docs/                     ← demo page
 ```
 
 Training models live **inside** the notebooks (no `ml/models/*.py` for now).
@@ -62,7 +62,7 @@ Training models live **inside** the notebooks (no `ml/models/*.py` for now).
 ### Demo webpage
 
 ```bash
-cd web
+cd docs
 python3 -m http.server 8080
 # open http://localhost:8080
 ```
@@ -158,7 +158,7 @@ Repeat for 2022…2025, then merge folders into `train_daily_JFM_2019_2025`.
 2. **Embedding** — Vision Transformer in `ml/configs/train_vit.ipynb`  
 3. **Reconstruction** — surface → `thetao` at depths  
 4. **Validation** — RMSE (°C), correlation, % within 1 °C  
-5. **PoC demo** — Bay of Bengal / Arabian Sea maps and profiles (`web/`)  
+5. **PoC demo** — Bay of Bengal / Arabian Sea maps and profiles (`docs/`)  
 
 ---
 
