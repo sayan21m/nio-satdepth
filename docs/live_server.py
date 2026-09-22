@@ -40,7 +40,8 @@ for _tag in ("full_2015_2024", "jfmamjjas_2015_2024", "jfmamj_2015_2024", "jfm_2
 else:
     RUN_TAG = WEIGHTS = NORM_PATH = None
 
-app = Flask(__name__, static_folder=str(WEB), static_url_path="")
+# Do not mount Flask's built-in static at "". It shadows GET / and 404s on Render.
+app = Flask(__name__, static_folder=None)
 
 _state = {
     "ready": False,
@@ -264,11 +265,6 @@ def _predict(day_idx: int) -> dict[str, list]:
     return out
 
 
-@app.get("/")
-def index():
-    return send_from_directory(WEB, "index.html")
-
-
 @app.get("/api/live")
 def api_live():
     if _state["error"]:
@@ -324,6 +320,16 @@ def health():
             "idx": _state["idx"],
         }
     )
+
+
+@app.route("/")
+def index():
+    return send_from_directory(WEB, "index.html")
+
+
+@app.route("/<path:filename>")
+def public_file(filename):
+    return send_from_directory(WEB, filename)
 
 
 def start_background() -> None:
