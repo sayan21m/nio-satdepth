@@ -1,3 +1,6 @@
+# Shared / deploy-safe. Render installs this file if the dashboard
+# still uses `pip install -r requirements.txt`.
+# Local training extras: pip install -r requirements-ml.txt
 numpy>=2.0
 xarray>=2024.10
 netCDF4>=1.6
@@ -5,7 +8,5 @@ h5netcdf>=1.4
 scipy>=1.11
 matplotlib>=3.8
 tqdm>=4.65
-torch>=2.2
-# Optional TF notebooks (Apple: TF 2.20 + metal 1.2 often crashes on import)
-tensorflow>=2.15
-copernicusmarine>=2.0
+flask>=3.0
+gunicorn>=22.0

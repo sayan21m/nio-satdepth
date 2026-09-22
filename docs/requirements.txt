@@ -1,0 +1,7 @@
+# Render / demo server only — do not install torch or TensorFlow here.
+flask>=3.0
+gunicorn>=22.0
+numpy>=2.0
+xarray>=2024.10
+h5netcdf>=1.4
+netCDF4>=1.6

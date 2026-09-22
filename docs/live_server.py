@@ -326,13 +326,22 @@ def health():
     )
 
 
+def start_background() -> None:
+    if getattr(start_background, "_started", False):
+        return
+    start_background._started = True
+    threading.Thread(target=_init, daemon=True).start()
+    threading.Thread(target=_advance_loop, daemon=True).start()
+
+
+start_background()
+
+
 def main():
-    t = threading.Thread(target=_init, daemon=True)
-    t.start()
-    adv = threading.Thread(target=_advance_loop, daemon=True)
-    adv.start()
-    print("Open http://127.0.0.1:8765  -> Live Map tab", flush=True)
-    app.run(host="127.0.0.1", port=8765, debug=False, threaded=True)
+    port = int(os.environ.get("PORT", "8765"))
+    host = "0.0.0.0" if os.environ.get("PORT") else "127.0.0.1"
+    print(f"Open http://{host}:{port}  -> Live Map tab", flush=True)
+    app.run(host=host, port=port, debug=False, threaded=True)
 
 
 if __name__ == "__main__":

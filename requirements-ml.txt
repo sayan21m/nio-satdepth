@@ -1,0 +1,7 @@
+# Local training / Copernicus download only. Not used on Render.
+torch>=2.2
+tensorflow>=2.15
+copernicusmarine>=2.0
+matplotlib>=3.8
+tqdm>=4.65
+scipy>=1.11

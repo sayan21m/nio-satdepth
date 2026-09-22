@@ -1,0 +1,11 @@
+# OceanEmbed demo — static site + Flask API (no TensorFlow on the host).
+services:
+  - type: web
+    name: oceanembed
+    runtime: python
+    plan: free
+    buildCommand: pip install -r docs/requirements.txt
+    startCommand: gunicorn --chdir docs live_server:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
