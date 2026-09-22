@@ -21,7 +21,8 @@ import xarray as xr
 from flask import Flask, jsonify, request, send_from_directory
 
 ROOT = Path(__file__).resolve().parents[1]
-WEB = Path(__file__).resolve().parent
+# Site files live in web/ (index, css, videos). docs/ only has the Flask server.
+WEB = ROOT / "web"
 DATA = ROOT / "data" / "processed" / "train_daily_2015_2024"
 CKPT_DIR = ROOT / "ml" / "checkpoints"
 CHANNELS = ["sst", "sss", "sla", "adt", "uo", "vo", "u10", "v10"]
@@ -191,8 +192,12 @@ def _load_vit():
 
 def _init():
     try:
+        surface_path = DATA / "surface.nc"
+        if not surface_path.exists():
+            print(f"No training cubes at {surface_path} — site-only mode", flush=True)
+            return
         print("Loading cubes…", flush=True)
-        surface = xr.open_dataset(DATA / "surface.nc", engine="h5netcdf")
+        surface = xr.open_dataset(surface_path, engine="h5netcdf")
         target = xr.open_dataset(DATA / "target.nc", engine="h5netcdf")
         _state["surface"] = surface
         _state["target"] = target
@@ -324,6 +329,9 @@ def health():
 
 @app.route("/")
 def index():
+    index_path = WEB / "index.html"
+    if not index_path.is_file():
+        return f"index.html not found at {index_path}", 500
     return send_from_directory(WEB, "index.html")
 
 
@@ -340,6 +348,7 @@ def start_background() -> None:
     threading.Thread(target=_advance_loop, daemon=True).start()
 
 
+print(f"WEB={WEB}  index={'yes' if (WEB / 'index.html').is_file() else 'NO'}", flush=True)
 start_background()
 
 
