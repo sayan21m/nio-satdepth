@@ -21,10 +21,10 @@ Reconstruct **depth-wise subsurface ocean temperature** over the North Indian Oc
 
 | Role | Variables | File |
 |------|-----------|------|
-| **Inputs (X)** | `sst`, `sss`, `sla`, `adt`, `uo`, `vo`, `u10`, `v10` | `data/processed/train_daily_JFM_2015_2024/surface.nc` |
-| **Labels (Y)** | `thetao` (15 depths) | `data/processed/train_daily_JFM_2015_2024/target.nc` |
+| **Inputs (X)** | `sst`, `sss`, `sla`, `adt`, `uo`, `vo`, `u10`, `v10` | `data/processed/train_daily_2015_2024/surface.nc` |
+| **Labels (Y)** | `thetao` (15 depths) | `data/processed/train_daily_2015_2024/target.nc` |
 
-**Current set:** Jan–Mar (JFM) **2015–2024** — **903** daily samples (same season, multi-year).
+**Current set:** Jan–Dec **2015–2024** — **3653** daily samples (full years).
 
 | Variable | Meaning |
 |----------|---------|
@@ -48,13 +48,13 @@ SIH_PS_26066/
 │   ├── download_pipeline.py
 │   └── extend_dataset.py
 ├── ml/
-│   ├── configs/              ← EDA + train ViT / ConvLSTM
+│   ├── configs/              ← EDA + train ViT + compare
 │   └── checkpoints/
 ├── data/
 │   └── processed/
-│       └── train_daily_JFM_2015_2024/
+│       └── train_daily_2015_2024/
 ├── outputs/
-└── web/                      ← demo page (both models)
+└── docs/                     ← demo page
 ```
 
 Training models live **inside** the notebooks (no `ml/models/*.py` for now).
@@ -62,12 +62,12 @@ Training models live **inside** the notebooks (no `ml/models/*.py` for now).
 ### Demo webpage
 
 ```bash
-cd web
+cd docs
 python3 -m http.server 8080
 # open http://localhost:8080
 ```
 
-ViT vs ConvLSTM, RMSE table, and result galleries.
+ViT results, RMSE leaderboard of dropped architectures, and prediction galleries.
 
 ---
 
@@ -100,8 +100,8 @@ Credentials go under `~/.copernicusmarine/` (not in this repo).
 ```python
 import xarray as xr
 
-surface = xr.open_dataset("data/processed/train_daily_JFM_2015_2024/surface.nc")
-target  = xr.open_dataset("data/processed/train_daily_JFM_2015_2024/target.nc")
+surface = xr.open_dataset("data/processed/train_daily_2015_2024/surface.nc")
+target  = xr.open_dataset("data/processed/train_daily_2015_2024/target.nc")
 
 print(surface)  # time × lat × lon
 print(target)   # time × depth × lat × lon
@@ -110,7 +110,7 @@ print(target)   # time × depth × lat × lon
 - **X** = surface fields each day  
 - **Y** = `thetao` at 15 depths  
 
-Notebooks: `ml/configs/eda.ipynb`, `train_vit.ipynb`, `train_convlstm_lag.ipynb`.
+Notebooks: `ml/configs/eda.ipynb`, `train_vit.ipynb`, `compare_models.ipynb`.
 
 ---
 
@@ -155,10 +155,10 @@ Repeat for 2022…2025, then merge folders into `train_daily_JFM_2019_2025`.
 ## Expected solution path (SIH)
 
 1. **Preprocessing** — `download_pipeline.py`  
-2. **Embedding** — ViT / ConvLSTM in notebooks  
+2. **Embedding** — Vision Transformer in `ml/configs/train_vit.ipynb`  
 3. **Reconstruction** — surface → `thetao` at depths  
 4. **Validation** — RMSE (°C), correlation, % within 1 °C  
-5. **PoC demo** — Bay of Bengal / Arabian Sea maps and profiles (`web/`)  
+5. **PoC demo** — Bay of Bengal / Arabian Sea maps and profiles (`docs/`)  
 
 ---
 
@@ -166,8 +166,8 @@ Repeat for 2022…2025, then merge folders into `train_daily_JFM_2019_2025`.
 
 1. `pip install -r requirements.txt`  
 2. `copernicusmarine login`  
-3. Open `data/processed/train_daily_JFM_2015_2024/`  
-4. Train via `ml/configs/train_vit.ipynb` or `train_convlstm_lag.ipynb`  
+3. Open `data/processed/train_daily_2015_2024/`  
+4. Train via `ml/configs/train_vit.ipynb`  
 5. Add JFM years with `src/download_pipeline.py`  
 
 Do not commit `.nc` files or credentials (see `.gitignore`).

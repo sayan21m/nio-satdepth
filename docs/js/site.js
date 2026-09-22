@@ -137,6 +137,30 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     });
 
+    // Staggered reveal for Live Map controls
+    gsap.utils.toArray('.live-container').forEach(container => {
+        const controls = container.querySelectorAll('.control-group');
+        const viewer = container.querySelector('.live-map-stage');
+        
+        if(controls.length > 0) {
+            gsap.fromTo(controls, 
+                { x: -30, opacity: 0 }, 
+                { x: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: 'power3.out',
+                  scrollTrigger: { trigger: container, start: 'top 85%' }
+                }
+            );
+        }
+        
+        if(viewer) {
+            gsap.fromTo(viewer, 
+                { y: 40, opacity: 0, scale: 0.98 }, 
+                { y: 0, opacity: 1, scale: 1, duration: 1, ease: 'power3.out', delay: 0.2,
+                  scrollTrigger: { trigger: container, start: 'top 85%' }
+                }
+            );
+        }
+    });
+
     // Story text slides in from the left
     gsap.utils.toArray('.story-text').forEach(text => {
         gsap.fromTo(text,
@@ -198,10 +222,10 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentModel = 'vit', currentView = 'map';
 
     const modelDesc = {
-        vit: '<strong>Vision Transformer (Baseline):</strong> Splits surface maps into patches, encoding them with a lightweight Transformer. Reconstructs subsurface temperatures from purely surface inputs.',
-        lstm: '<strong>ConvLSTM Lag Network:</strong> Leverages temporal dynamics via a 3-day memory lag. Incorporates prior states to produce highly accurate, time-dependent fluid dynamic forecasts.'
+        vit: '<strong>Vision Transformer (kept):</strong> Surface patches → Transformer → 15 depths. Overall RMSE 0.671 °C — best of the architectures we trained.',
+        compare: '<strong>Compare:</strong> ViT 0.671 (kept). Dropped: ViT+L_grad 0.686 · thermocline-first 0.713 · structured 0.728 · depth-cond 0.732–0.736 · TC-band 1.759 (band-only).'
     };
-    const modelNames = { vit: 'Vision Transformer', lstm: 'ConvLSTM' };
+    const modelNames = { vit: 'Vision Transformer', compare: 'Compare' };
     const viewNames = { map: 'Prediction Map', profile: 'Vertical Profile', metrics: 'Validation Metrics' };
 
     const viewPanels = document.querySelectorAll('.view-panel');

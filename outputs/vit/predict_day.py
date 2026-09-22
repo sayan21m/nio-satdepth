@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run ViT inference for one day from train_daily_JFM_2015_2024."""
+"""Run ViT inference for one day from train_daily_2015_2024."""
 from __future__ import annotations
 
 import argparse
@@ -13,9 +13,9 @@ from tensorflow import keras
 from tensorflow.keras import layers, regularizers
 
 ROOT = Path(__file__).resolve().parents[2]
-DATA = ROOT / "data" / "processed" / "train_daily_JFM_2015_2024"
+DATA = ROOT / "data" / "processed" / "train_daily_2015_2024"
 CKPT_DIR = ROOT / "ml" / "checkpoints"
-RUN_TAG = "jfm_2015_2024"
+RUN_TAG = "full_2015_2024"
 CHANNELS = ["sst", "sss", "sla", "adt", "uo", "vo", "u10", "v10"]
 
 
