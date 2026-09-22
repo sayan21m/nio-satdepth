@@ -22,12 +22,58 @@
     { id: "150m", label: "150 m", unit: "°C" },
   ];
 
-  function turboRGB(t) {
+  // Matplotlib turbo (Google) control points
+  const TURBO_STOPS = [
+    [0.0, 48, 18, 59],
+    [0.1, 70, 69, 172],
+    [0.2, 67, 135, 247],
+    [0.35, 42, 176, 203],
+    [0.5, 34, 199, 112],
+    [0.65, 164, 218, 54],
+    [0.8, 254, 185, 39],
+    [0.9, 251, 110, 32],
+    [1.0, 122, 4, 3],
+  ];
+
+  function lerpRgb(stops, t) {
     t = Math.max(0, Math.min(1, t));
-    const r = Math.round(255 * Math.max(0, Math.min(1, 1.5 - Math.abs(4 * t - 3))));
-    const g = Math.round(255 * Math.max(0, Math.min(1, 1.5 - Math.abs(4 * t - 2))));
-    const b = Math.round(255 * Math.max(0, Math.min(1, 1.5 - Math.abs(4 * t - 1))));
-    return [r, g, b];
+    let i = 0;
+    while (i < stops.length - 2 && t > stops[i + 1][0]) i++;
+    const a = stops[i];
+    const b = stops[i + 1];
+    const u = (t - a[0]) / Math.max(b[0] - a[0], 1e-9);
+    return [
+      Math.round(a[1] + (b[1] - a[1]) * u),
+      Math.round(a[2] + (b[2] - a[2]) * u),
+      Math.round(a[3] + (b[3] - a[3]) * u),
+    ];
+  }
+
+  function turboRGB(t) {
+    return lerpRgb(TURBO_STOPS, t);
+  }
+
+  function rdBuRGB(t) {
+    // matplotlib RdBu_r: blue (low) → white → red (high)
+    const x = Math.max(0, Math.min(1, t));
+    if (x < 0.5) {
+      const u = x / 0.5;
+      return [
+        Math.round(33 + (247 - 33) * u),
+        Math.round(102 + (247 - 102) * u),
+        Math.round(172 + (247 - 172) * u),
+      ];
+    }
+    const u = (x - 0.5) / 0.5;
+    return [
+      Math.round(247 + (178 - 247) * u),
+      Math.round(247 + (24 - 247) * u),
+      Math.round(247 + (43 - 247) * u),
+    ];
+  }
+
+  function divergingField(id) {
+    return id === "sla" || id === "adt" || id === "uo" || id === "vo" || id === "u10" || id === "v10";
   }
 
   function finiteStats(grid) {
@@ -97,7 +143,13 @@
     const W = grid[0]?.length || 0;
     if (!H || !W) return;
 
-    const { vmin, vmax } = finiteStats(grid);
+    let { vmin, vmax } = finiteStats(grid);
+    const diverging = !!opts.diverging;
+    if (diverging) {
+      const lim = Math.max(Math.abs(vmin), Math.abs(vmax), 1e-6);
+      vmin = -lim;
+      vmax = lim;
+    }
     const { L: padL, R: padR, T: padT, B: padB } = PAD;
     const plotW = cssW - padL - padR;
     const plotH = cssH - padT - padB;
@@ -116,13 +168,14 @@
         const v = sampleBilinear(grid, H, W, gx, gy);
         const p = (j * outW + i) * 4;
         if (v == null || Number.isNaN(v)) {
-          img.data[p] = 15;
-          img.data[p + 1] = 23;
-          img.data[p + 2] = 42;
+          img.data[p] = 0;
+          img.data[p + 1] = 0;
+          img.data[p + 2] = 0;
           img.data[p + 3] = 255;
           continue;
         }
-        const [r, g, b] = turboRGB((v - vmin) / span);
+        const tn = (v - vmin) / span;
+        const [r, g, b] = diverging ? rdBuRGB(tn) : turboRGB(tn);
         img.data[p] = r;
         img.data[p + 1] = g;
         img.data[p + 2] = b;
@@ -135,7 +188,7 @@
     tmp.height = outH;
     tmp.getContext("2d").putImageData(img, 0, 0);
 
-    ctx.fillStyle = "#0b1220";
+    ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, cssW, cssH);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
@@ -281,7 +334,7 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
       if (!grid) {
-        ctx.fillStyle = "#0b1220";
+        ctx.fillStyle = "#000000";
         ctx.fillRect(0, 0, cssSize.w, cssSize.h);
         ctx.fillStyle = "#94a3b8";
         ctx.font = "14px Inter, system-ui, sans-serif";
@@ -304,6 +357,7 @@
 
       paintColormap(ctx, cssSize.w, cssSize.h, grid, {
         dpr,
+        diverging: divergingField(fieldId),
         lat: payload.lat,
         lon: payload.lon,
         onRange(vmin, vmax) {

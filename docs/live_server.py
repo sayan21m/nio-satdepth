@@ -221,6 +221,7 @@ def _load_demo() -> bool:
     _state["n"] = len(days)
     _state["idx"] = 0
     _state["ready"] = True
+    _state["demo_model"] = data.get("model") or "demo"
     print(f"Demo playback · {len(days)} days from {path}", flush=True)
     return True
 
@@ -336,7 +337,7 @@ def api_live():
                     "date": day["date"],
                     "idx": idx,
                     "n": _state["n"],
-                    "model": "demo",
+                    "model": _state.get("demo_model") or "demo",
                     "lat": [float(x) for x in _state["lat"]],
                     "lon": [float(x) for x in _state["lon"]],
                     "surface": day["surface"],
