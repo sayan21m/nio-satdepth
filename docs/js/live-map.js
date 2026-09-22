@@ -1,6 +1,6 @@
 /**
  * Live colormap maps — filled pcolormesh-style canvas for surface + predicted θ.
- * Expects web/live_server.py on the same origin (http://127.0.0.1:8765).
+ * Expects docs/live_server.py on the same origin (http://127.0.0.1:8765).
  */
 (function () {
   const POLL_MS = 5000;

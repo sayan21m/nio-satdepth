@@ -4,7 +4,7 @@
 Serves filled-grid JSON for colormap maps (surface channels + predicted θ).
 Advances through the training cube on a timer so the UI looks continuous.
 
-  cd web && python live_server.py
+  cd docs && python live_server.py
   open http://127.0.0.1:8765
 """
 

@@ -30,5 +30,5 @@ Worse architectures (ViT + $L_{\mathrm{grad}}$, thermocline-first, structured em
 ## Demo site
 
 ```bash
-cd web && python3 -m http.server 8080
+cd docs && python3 -m http.server 8080
 ```
