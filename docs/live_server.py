@@ -10,6 +10,7 @@ Advances through the training cube on a timer so the UI looks continuous.
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 import threading
@@ -24,6 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 # Site files live in web/ (index, css, videos). docs/ only has the Flask server.
 WEB = ROOT / "web"
 DATA = ROOT / "data" / "processed" / "train_daily_2015_2024"
+DEMO = Path(__file__).resolve().parent / "data" / "live_demo.json"
 CKPT_DIR = ROOT / "ml" / "checkpoints"
 CHANNELS = ["sst", "sss", "sla", "adt", "uo", "vo", "u10", "v10"]
 PRED_DEPTHS_M = [0.0, 50.0, 100.0, 150.0]
@@ -62,6 +64,8 @@ _state = {
     "y_std": None,
     "pred_cache": {},  # idx -> pred maps
     "lock": threading.Lock(),
+    "demo": False,
+    "demo_days": None,
 }
 
 
@@ -190,10 +194,30 @@ def _load_vit():
     return model
 
 
+def _load_demo() -> bool:
+    if not DEMO.is_file():
+        return False
+    data = json.loads(DEMO.read_text())
+    days = data.get("days") or []
+    if not days:
+        return False
+    _state["demo"] = True
+    _state["demo_days"] = days
+    _state["lat"] = data["lat"]
+    _state["lon"] = data["lon"]
+    _state["n"] = len(days)
+    _state["idx"] = 0
+    _state["ready"] = True
+    print(f"Demo playback · {len(days)} days from {DEMO.name}", flush=True)
+    return True
+
+
 def _init():
     try:
         surface_path = DATA / "surface.nc"
         if not surface_path.exists():
+            if _load_demo():
+                return
             print(f"No training cubes at {surface_path} — site-only mode", flush=True)
             return
         print("Loading cubes…", flush=True)
@@ -280,8 +304,26 @@ def api_live():
     with _state["lock"]:
         idx = int(request.args.get("idx", _state["idx"]))
         idx = max(0, min(idx, _state["n"] - 1))
-        date = str(_state["times"][idx])[:10]
 
+        if _state.get("demo") and _state.get("demo_days"):
+            day = _state["demo_days"][idx]
+            return jsonify(
+                {
+                    "ok": True,
+                    "date": day["date"],
+                    "idx": idx,
+                    "n": _state["n"],
+                    "model": "demo",
+                    "lat": [float(x) for x in _state["lat"]],
+                    "lon": [float(x) for x in _state["lon"]],
+                    "surface": day["surface"],
+                    "pred": day.get("pred") or {},
+                    "true": day.get("true") or {},
+                    "advance_sec": ADVANCE_SEC,
+                }
+            )
+
+        date = str(_state["times"][idx])[:10]
         surface_maps = {}
         for c in CHANNELS:
             surface_maps[c] = _grid_to_list(_state["surface"][c].isel(time=idx).values)

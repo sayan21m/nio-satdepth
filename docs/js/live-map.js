@@ -330,7 +330,13 @@
         if (intervalSec && data.advance_sec) intervalSec.textContent = String(data.advance_sec);
         dateEl.textContent = data.date;
         updatedEl.textContent = new Date().toLocaleTimeString();
-        setStatus(data.model ? `Live · ViT ${data.model}` : "Live · surface only");
+        setStatus(
+          data.model === "demo"
+            ? "Demo playback"
+            : data.model
+              ? `Live · ViT ${data.model}`
+              : "Live · surface only"
+        );
         redraw();
       } catch (err) {
         console.error(err);
