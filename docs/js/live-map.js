@@ -313,34 +313,70 @@
       });
     }
 
+    let demoPack = null;
+    let demoIdx = 0;
+
+    function applyPayload(data) {
+      payload = data;
+      if (intervalSec && data.advance_sec) intervalSec.textContent = String(data.advance_sec);
+      dateEl.textContent = data.date;
+      updatedEl.textContent = new Date().toLocaleTimeString();
+      setStatus(
+        data.model === "demo"
+          ? "Demo playback"
+          : data.model
+            ? `Live · ViT ${data.model}`
+            : "Live · surface only"
+      );
+      redraw();
+    }
+
+    async function loadStaticDemo() {
+      if (!demoPack) {
+        const res = await fetch("/data/live_demo.json", { cache: "no-store" });
+        if (!res.ok) throw new Error(`demo HTTP ${res.status}`);
+        demoPack = await res.json();
+      }
+      const days = demoPack.days || [];
+      if (!days.length) throw new Error("empty demo");
+      const day = days[demoIdx % days.length];
+      demoIdx += 1;
+      applyPayload({
+        ok: true,
+        date: day.date,
+        model: "demo",
+        lat: demoPack.lat,
+        lon: demoPack.lon,
+        surface: day.surface,
+        pred: day.pred || {},
+        true: day.true || {},
+        advance_sec: 20,
+        n: days.length,
+      });
+    }
+
     async function fetchLive() {
       if (busy) return;
       busy = true;
       setStatus("Updating…");
       try {
         const res = await fetch("/api/live", { cache: "no-store" });
-        if (res.status === 503) {
-          setStatus("Server loading cubes/model…");
-          return;
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ok) {
+            applyPayload(data);
+            return;
+          }
         }
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (!data.ok) throw new Error(data.error || "bad response");
-        payload = data;
-        if (intervalSec && data.advance_sec) intervalSec.textContent = String(data.advance_sec);
-        dateEl.textContent = data.date;
-        updatedEl.textContent = new Date().toLocaleTimeString();
-        setStatus(
-          data.model === "demo"
-            ? "Demo playback"
-            : data.model
-              ? `Live · ViT ${data.model}`
-              : "Live · surface only"
-        );
-        redraw();
+        await loadStaticDemo();
       } catch (err) {
         console.error(err);
-        setStatus("Start live_server.py (port 8765)");
+        try {
+          await loadStaticDemo();
+        } catch (demoErr) {
+          console.error(demoErr);
+          setStatus("Start live_server.py (port 8765)");
+        }
       } finally {
         busy = false;
       }

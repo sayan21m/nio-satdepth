@@ -25,7 +25,6 @@ ROOT = Path(__file__).resolve().parents[1]
 # Site files live in web/ (index, css, videos). docs/ only has the Flask server.
 WEB = ROOT / "web"
 DATA = ROOT / "data" / "processed" / "train_daily_2015_2024"
-DEMO = Path(__file__).resolve().parent / "data" / "live_demo.json"
 CKPT_DIR = ROOT / "ml" / "checkpoints"
 CHANNELS = ["sst", "sss", "sla", "adt", "uo", "vo", "u10", "v10"]
 PRED_DEPTHS_M = [0.0, 50.0, 100.0, 150.0]
@@ -194,10 +193,24 @@ def _load_vit():
     return model
 
 
+def _demo_paths() -> list[Path]:
+    here = Path(__file__).resolve().parent
+    return [
+        here / "data" / "live_demo.json",
+        ROOT / "docs" / "data" / "live_demo.json",
+        WEB / "data" / "live_demo.json",
+        Path.cwd() / "data" / "live_demo.json",
+    ]
+
+
 def _load_demo() -> bool:
-    if not DEMO.is_file():
+    if _state.get("demo") and _state.get("ready"):
+        return True
+    path = next((p for p in _demo_paths() if p.is_file()), None)
+    if path is None:
+        print("Demo JSON not found. Tried:", *[str(p) for p in _demo_paths()], flush=True)
         return False
-    data = json.loads(DEMO.read_text())
+    data = json.loads(path.read_text())
     days = data.get("days") or []
     if not days:
         return False
@@ -208,7 +221,7 @@ def _load_demo() -> bool:
     _state["n"] = len(days)
     _state["idx"] = 0
     _state["ready"] = True
-    print(f"Demo playback · {len(days)} days from {DEMO.name}", flush=True)
+    print(f"Demo playback · {len(days)} days from {path}", flush=True)
     return True
 
 
@@ -294,10 +307,20 @@ def _predict(day_idx: int) -> dict[str, list]:
     return out
 
 
+@app.get("/data/live_demo.json")
+def demo_json():
+    path = next((p for p in _demo_paths() if p.is_file()), None)
+    if path is None:
+        return jsonify({"ok": False, "error": "demo missing"}), 404
+    return send_from_directory(path.parent, path.name)
+
+
 @app.get("/api/live")
 def api_live():
     if _state["error"]:
         return jsonify({"ok": False, "error": _state["error"]}), 500
+    if not _state["ready"]:
+        _load_demo()
     if not _state["ready"]:
         return jsonify({"ok": False, "error": "loading"}), 503
 
@@ -391,7 +414,11 @@ def start_background() -> None:
 
 
 print(f"WEB={WEB}  index={'yes' if (WEB / 'index.html').is_file() else 'NO'}", flush=True)
-start_background()
+if (DATA / "surface.nc").is_file():
+    start_background()
+else:
+    _load_demo()
+    threading.Thread(target=_advance_loop, daemon=True).start()
 
 
 def main():
